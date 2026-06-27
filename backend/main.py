@@ -21,7 +21,8 @@ logger = logging.getLogger("geovinculo-backend")
 app = FastAPI(
     title="GeoVínculo CAR API",
     description="Motor de IA e Validação Geoespacial para o haCARthon 2026",
-    version="1.0.0"
+    version="1.0.0",
+    root_path=os.getenv("API_ROOT_PATH", "")
 )
 
 # Habilitar CORS

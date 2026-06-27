@@ -57,6 +57,7 @@ services:
     environment:
       - DATABASE_URL=postgresql://geovinculo_admin:senha_segura_car@postgis-db:5432/geovinculo_spatial
       - ODM_URL=http://nodeodm:3000
+      - API_ROOT_PATH=/geovinculo_api
     depends_on:
       - postgis-db
       - nodeodm
