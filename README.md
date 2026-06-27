@@ -104,7 +104,7 @@ A API possui três módulos integrados:
 
 ## ☁️ Implantação no Servidor AWS (Produção)
 
-Para rodar na instância AWS (`18.225.212.92`), siga os passos abaixo:
+Para rodar na instância AWS (`geovinculo.sytes.net`), siga os passos abaixo:
 
 1. **Configurar o Grupo de Segurança (Security Group)**:
    - Acesse o Console AWS EC2.
@@ -114,12 +114,12 @@ Para rodar na instância AWS (`18.225.212.92`), siga os passos abaixo:
 2. **Enviar os Arquivos**:
    Com o arquivo `.pem` fornecido no projeto (`game-d-ufpa.pem`), envie os arquivos locais:
    ```bash
-   scp -i game-d-ufpa.pem -r ./* ubuntu@18.225.212.92:/home/ubuntu/geovinculo/
+   scp -i game-d-ufpa.pem -r ./* ubuntu@geovinculo.sytes.net:/home/ubuntu/geovinculo/
    ```
 
 3. **Conectar e Rodar**:
    ```bash
-   ssh -i game-d-ufpa.pem ubuntu@18.225.212.92
+   ssh -i game-d-ufpa.pem ubuntu@geovinculo.sytes.net
    cd /home/ubuntu/geovinculo/
    ./install.sh
    ```
@@ -136,12 +136,12 @@ O arquivo [nginx_reverse_proxy.conf](file:///home/lnx/00Suporte/geovinculo/nginx
 
 Use os seguintes caminhos públicos para se conectar ao ecossistema do GeoVínculo no servidor AWS:
 
-*   **API Backend (GeoVínculo IA)**: `http://18.225.212.92/geovinculo_api`
-    *   **Documentação Swagger**: `http://18.225.212.92/geovinculo_api/docs`
-    *   **Health Check**: `http://18.225.212.92/geovinculo_api/api/v1/health`
-    *   **Buffer APP (Vetorização)**: `http://18.225.212.92/geovinculo_api/api/v1/vetorizacao/app`
-    *   **Validador (MapBiomas)**: `http://18.225.212.92/geovinculo_api/api/v1/validacao/mapbiomas`
-    *   **Upload Drone (NodeODM)**: `http://18.225.212.92/geovinculo_api/api/v1/drone/upload`
-*   **Painel NodeODM**: `http://18.225.212.92/geovinculo_odm/`
-*   **GeoServer**: `http://18.225.212.92/geovinculo_geoserver/`
+*   **API Backend (GeoVínculo IA)**: `http://geovinculo.sytes.net/geovinculo_api`
+    *   **Documentação Swagger**: `http://geovinculo.sytes.net/geovinculo_api/docs`
+    *   **Health Check**: `http://geovinculo.sytes.net/geovinculo_api/api/v1/health`
+    *   **Buffer APP (Vetorização)**: `http://geovinculo.sytes.net/geovinculo_api/api/v1/vetorizacao/app`
+    *   **Validador (MapBiomas)**: `http://geovinculo.sytes.net/geovinculo_api/api/v1/validacao/mapbiomas`
+    *   **Upload Drone (NodeODM)**: `http://geovinculo.sytes.net/geovinculo_api/api/v1/drone/upload`
+*   **Painel NodeODM**: `http://geovinculo.sytes.net/geovinculo_odm/`
+*   **GeoServer**: `http://geovinculo.sytes.net/geovinculo_geoserver/`
 
