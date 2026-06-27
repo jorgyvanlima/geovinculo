@@ -15,6 +15,10 @@ services:
       - pg_data:/var/lib/postgresql/data
     networks:
       - geovinculo_net
+    deploy:
+      resources:
+        limits:
+          memory: 200M
     restart: unless-stopped
 
   # Módulo de Fotogrametria de Drones (OpenDroneMap)
@@ -27,6 +31,10 @@ services:
       - odm_data:/var/www/data
     networks:
       - geovinculo_net
+    deploy:
+      resources:
+        limits:
+          memory: 150M
     restart: unless-stopped
 
   # Servidor de Mapas (GeoServer)
@@ -36,6 +44,8 @@ services:
     environment:
       - GEOSERVER_ADMIN_PASSWORD=admin_geo
       - GEOSERVER_ADMIN_USER=admin
+      - EXTRA_JAVA_OPTS=-Xms128m -Xmx256m
+      - JAVA_OPTS=-Xms128m -Xmx256m
     ports:
       - "8084:8080"
     volumes:
@@ -44,6 +54,10 @@ services:
       - postgis-db
     networks:
       - geovinculo_net
+    deploy:
+      resources:
+        limits:
+          memory: 300M
     restart: unless-stopped
 
   # Motor de IA e Validação (Backend FastAPI Python)
@@ -63,6 +77,10 @@ services:
       - nodeodm
     networks:
       - geovinculo_net
+    deploy:
+      resources:
+        limits:
+          memory: 150M
     restart: unless-stopped
 
   # Landing Page e Portal (Frontend Nginx)
@@ -75,6 +93,10 @@ services:
       - "8089:80"
     networks:
       - geovinculo_net
+    deploy:
+      resources:
+        limits:
+          memory: 50M
     restart: unless-stopped
 
 volumes:
