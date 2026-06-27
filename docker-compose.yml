@@ -1,0 +1,74 @@
+version: '3.8'
+
+services:
+  # Banco de Dados Espacial (PostGIS)
+  postgis-db:
+    image: postgis/postgis:15-3.3
+    container_name: geovinculo_db
+    environment:
+      POSTGRES_USER: geovinculo_admin
+      POSTGRES_PASSWORD: senha_segura_car
+      POSTGRES_DB: geovinculo_spatial
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    networks:
+      - geovinculo_net
+    restart: unless-stopped
+
+  # Módulo de Fotogrametria de Drones (OpenDroneMap)
+  nodeodm:
+    image: opendronemap/nodeodm:latest
+    container_name: geovinculo_odm
+    ports:
+      - "3003:3000"
+    volumes:
+      - odm_data:/var/www/data
+    networks:
+      - geovinculo_net
+    restart: unless-stopped
+
+  # Servidor de Mapas (GeoServer)
+  geoserver:
+    image: docker.osgeo.org/geoserver:2.24.x
+    container_name: geovinculo_geoserver
+    environment:
+      - GEOSERVER_ADMIN_PASSWORD=admin_geo
+      - GEOSERVER_ADMIN_USER=admin
+    ports:
+      - "8084:8080"
+    volumes:
+      - geoserver_data:/opt/geoserver_data
+    depends_on:
+      - postgis-db
+    networks:
+      - geovinculo_net
+    restart: unless-stopped
+
+  # Motor de IA e Validação (Backend FastAPI Python)
+  backend-ia:
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: geovinculo_backend
+    ports:
+      - "8002:8000"
+    environment:
+      - DATABASE_URL=postgresql://geovinculo_admin:senha_segura_car@postgis-db:5432/geovinculo_spatial
+      - ODM_URL=http://nodeodm:3000
+    depends_on:
+      - postgis-db
+      - nodeodm
+    networks:
+      - geovinculo_net
+    restart: unless-stopped
+
+volumes:
+  pg_data:
+  odm_data:
+  geoserver_data:
+
+networks:
+  geovinculo_net:
+    driver: bridge
