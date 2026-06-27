@@ -38,6 +38,7 @@ $COMPOSE_CMD up -d --build
 echo "[3/3] Instalação Concluída com Sucesso!"
 echo "==============================================="
 echo "Serviços disponíveis em:"
+echo "- Portal / Landing Page: http://localhost:8089/geovinculo_app/"
 echo "- Backend GeoVínculo IA: http://localhost:8002"
 echo "- Motor de Fotogrametria (NodeODM): http://localhost:3003"
 echo "- Servidor de Mapas (GeoServer): http://localhost:8084/geoserver"

@@ -65,6 +65,18 @@ services:
       - geovinculo_net
     restart: unless-stopped
 
+  # Landing Page e Portal (Frontend Nginx)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: geovinculo_frontend
+    ports:
+      - "8089:80"
+    networks:
+      - geovinculo_net
+    restart: unless-stopped
+
 volumes:
   pg_data:
   odm_data:
