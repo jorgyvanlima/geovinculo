@@ -283,7 +283,7 @@ async def upload_drone_imagens(files: List[UploadFile] = File(...)):
         # Algumas versões do NodeODM aceitam multipart completo com imagens diretamente
         form_data = {
             "options": json.dumps(odm_options)
-        ]
+        }
         
         # Ler arquivos em memória e formatar para requests
         multipart_files = []
