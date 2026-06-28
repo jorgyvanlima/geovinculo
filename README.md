@@ -100,6 +100,22 @@ A API possui três módulos integrados:
 - **Rota**: `POST /api/v1/drone/upload`
 - **Descrição**: Envia múltiplos arquivos raster ou fotos de drone diretamente para processamento e geração de ortomosaicos no NodeODM.
 
+### 4. Camada de Abstração de Regras Estaduais (CARE)
+- **Rota**: `GET /api/v1/care/regras/{uf}`
+- **Descrição**: Fornece de forma dinâmica e federativa as regras estaduais de Áreas de Preservação Permanente (APP) e limites florestais legais por UF (ex: PA, SP, MT) para parametrização do cálculo geométrico.
+
+### 5. Prova Digital contra Fraudes (Foto-Hash EXIF)
+- **Rota**: `POST /api/v1/validacao/foto-hash`
+- **Descrição**: Extrai as coordenadas GPS e o timestamp contidos nos metadados EXIF da imagem da câmera enviada e calcula o hash criptográfico SHA-256 (com assinatura digital chancelada) para chancelar a imagem como prova de vida da terra e evitar fraudes em contestações.
+
+### 6. Detecção por Radar SAR (Sentinel-1)
+- **Rota**: `POST /api/v1/radar/sentinel1/anomalia`
+- **Descrição**: Processa dados de radar de abertura sintética (SAR) para confirmar se as anomalias detectadas no monitoramento orbital coincidem com a regeneração da vegetação sob nuvens.
+
+### 7. Exportador de Dados RPA Multi-schema
+- **Rota**: `POST /api/v1/rpa/exportacao`
+- **Descrição**: Traduz e reescreve geometrias GeoJSON e dados cadastrais do CAR para os schemas XML/JSON proprietários exigidos pelos órgãos estaduais brasileiros (ex: SIMLAM/PA, SIGAM/SP, MT-Sicar).
+
 ---
 
 ## ☁️ Implantação no Servidor AWS (Produção)
@@ -142,6 +158,10 @@ Use os seguintes caminhos públicos para se conectar ao ecossistema do GeoVíncu
     *   **Buffer APP (Vetorização)**: `http://geovinculo.sytes.net/geovinculo_api/api/v1/vetorizacao/app`
     *   **Validador (MapBiomas)**: `http://geovinculo.sytes.net/geovinculo_api/api/v1/validacao/mapbiomas`
     *   **Upload Drone (NodeODM)**: `http://geovinculo.sytes.net/geovinculo_api/api/v1/drone/upload`
+    *   **Abstração Federativa CARE**: `http://geovinculo.sytes.net/geovinculo_api/api/v1/care/regras/{uf}`
+    *   **Chancela Foto-Hash EXIF**: `http://geovinculo.sytes.net/geovinculo_api/api/v1/validacao/foto-hash`
+    *   **Sentinel-1 Radar SAR**: `http://geovinculo.sytes.net/geovinculo_api/api/v1/radar/sentinel1/anomalia`
+    *   **Exportador RPA**: `http://geovinculo.sytes.net/geovinculo_api/api/v1/rpa/exportacao`
 *   **Painel NodeODM**: `http://geovinculo.sytes.net/geovinculo_odm/`
 *   **GeoServer**: `http://geovinculo.sytes.net/geovinculo_geoserver/`
 

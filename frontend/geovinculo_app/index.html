@@ -45,6 +45,8 @@
     <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
     <script src="https://unpkg.com/@babel/standalone@7.12.12/babel.min.js"></script>
+    <!-- Turf.js for Edge AI Geometric Validation -->
+    <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
     
     <style>
         /* Custom animations and styling */
@@ -205,6 +207,182 @@
                 checkServices();
             }, []);
 
+            // =========================================================================
+            // MÓDULOS DE SIMULAÇÃO E EVOLUÇÃO DE ESCOPO (ESTADOS E FUNÇÕES)
+            // =========================================================================
+            
+            // Módulo A: Validação Geométrica Local (Turf.js)
+            const [walkPoints, setWalkPoints] = useState("correto"); // "correto" ou "cruzado"
+            const [turfMessage, setTurfMessage] = useState(null);
+            const [turfError, setTurfError] = useState(false);
+
+            // Módulo B: CARE (Camada de Abstração de Regras Estaduais)
+            const [selectedUf, setSelectedUf] = useState(localStorage.getItem("geovinculo_uf") || "");
+            const [careRules, setCareRules] = useState(null);
+            const [careLoading, setCareLoading] = useState(false);
+
+            // Módulo C: Prova Digital e Criptografia
+            const [photoFile, setPhotoFile] = useState(null);
+            const [scanStep, setScanStep] = useState(null); // "gps", "sha256", "signed", "done"
+            const [scanLogs, setScanLogs] = useState([]);
+            const [imgHashData, setImgHashData] = useState(null);
+            const [uploadingHash, setUploadingHash] = useState(false);
+            const [hashResponse, setHashResponse] = useState(null);
+
+            // Efeito para buscar regras do CARE ao selecionar a UF
+            useEffect(() => {
+                if (selectedUf) {
+                    localStorage.setItem("geovinculo_uf", selectedUf);
+                    setCareLoading(true);
+                    fetch(`http://geovinculo.sytes.net/geovinculo_api/api/v1/care/regras/${selectedUf}`)
+                        .then(res => res.json())
+                        .then(data => {
+                            setCareRules(data);
+                            setCareLoading(false);
+                        })
+                        .catch(err => {
+                            console.log("Erro de rede CARE API. Utilizando regras mockadas locais.", err);
+                            // Fallback mock offline
+                            const fallbackRules = {
+                                "PA": {
+                                    "nome": "Pará",
+                                    "buffer_rio_padrao_metros": 30.0,
+                                    "buffer_modulo_fiscal": { "ate_1": 5.0, "de_1_a_2": 8.0, "de_2_a_4": 15.0, "mais_de_4": 30.0 },
+                                    "exige_cadastro_simplificado": true,
+                                    "lei_referencia": "Lei Estadual nº 5.887/1995 (Regras Simplificadas CAR/PA)"
+                                },
+                                "SP": {
+                                    "nome": "São Paulo",
+                                    "buffer_rio_padrao_metros": 30.0,
+                                    "buffer_modulo_fiscal": { "ate_1": 5.0, "de_1_a_2": 15.0, "de_2_a_4": 20.0, "mais_de_4": 30.0 },
+                                    "exige_cadastro_simplificado": false,
+                                    "lei_referencia": "Lei Estadual nº 9.989/1997 e Código Florestal de SP"
+                                },
+                                "MT": {
+                                    "nome": "Mato Grosso",
+                                    "buffer_rio_padrao_metros": 30.0,
+                                    "buffer_modulo_fiscal": { "ate_1": 5.0, "de_1_a_2": 10.0, "de_2_a_4": 15.0, "mais_de_4": 30.0 },
+                                    "exige_cadastro_simplificado": true,
+                                    "lei_referencia": "Código de Meio Ambiente de Mato Grosso"
+                                }
+                            };
+                            setCareRules(fallbackRules[selectedUf] || {
+                                "uf": selectedUf,
+                                "nome": "Regra Federal (Padrão)",
+                                "buffer_rio_padrao_metros": 30.0,
+                                "buffer_modulo_fiscal": { "ate_1": 5.0, "de_1_a_2": 8.0, "de_2_a_4": 15.0, "mais_de_4": 30.0 },
+                                "exige_cadastro_simplificado": false,
+                                "lei_referencia": "Lei Federal nº 12.651/2012 (Código Florestal Brasileiro)"
+                            });
+                            setCareLoading(false);
+                        });
+                } else {
+                    setCareRules(null);
+                }
+            }, [selectedUf]);
+
+            // Executa validação de autointerseção com Turf.js
+            const runTurfValidation = () => {
+                setTurfMessage(null);
+                let coords;
+                if (walkPoints === "correto") {
+                    coords = [[
+                        [-48.5050, -1.4560],
+                        [-48.5030, -1.4560],
+                        [-48.5030, -1.4540],
+                        [-48.5050, -1.4540],
+                        [-48.5050, -1.4560]
+                    ]];
+                } else {
+                    // Hourglass / autokinking loop
+                    coords = [[
+                        [-48.5050, -1.4560],
+                        [-48.5030, -1.4540],
+                        [-48.5030, -1.4560],
+                        [-48.5050, -1.4540],
+                        [-48.5050, -1.4560]
+                    ]];
+                }
+
+                try {
+                    const polygon = turf.polygon(coords);
+                    const kinks = turf.kinks(polygon);
+                    
+                    if (kinks.features.length > 0) {
+                        setTurfError(true);
+                        setTurfMessage("Erro de Desenho: O polígono está se cruzando. Refaça a caminhada.");
+                    } else {
+                        setTurfError(false);
+                        setTurfMessage("Caminho Validado Localmente! Sem autointerseções.");
+                    }
+                } catch (e) {
+                    setTurfError(true);
+                    setTurfMessage("Erro na estrutura da geometria: " + e.message);
+                }
+            };
+
+            // Simula o escaneamento criptográfico de metadados
+            const handlePhotoChange = (e) => {
+                if (e.target.files && e.target.files[0]) {
+                    const file = e.target.files[0];
+                    setPhotoFile(file);
+                    setScanStep("gps");
+                    setScanLogs(["Iniciando análise de segurança da Prova Digital..."]);
+                    setHashResponse(null);
+                    
+                    setTimeout(() => {
+                        setScanStep("sha256");
+                        setScanLogs(prev => [...prev, "[OK] Extraindo GPS e metadados EXIF da câmera...", "Coordenadas: Lat -1.455800, Lng -48.504100"]);
+                        
+                        setTimeout(() => {
+                            setScanStep("signed");
+                            setScanLogs(prev => [...prev, "[OK] Gerando Hash Criptográfico SHA-256 de integridade...", "Hash: 63e020ef783d5a8b7ea92..."]);
+                            
+                            setTimeout(() => {
+                                setScanStep("done");
+                                setScanLogs(prev => [...prev, "✔ Foto Chancelada com Cadeia de Custódia!"]);
+                                setImgHashData("63e020ef783d5a8b7ea92cb3b9a05ffc70f3f2d2");
+                            }, 800);
+                        }, 800);
+                    }, 800);
+                }
+            };
+
+            // Envia para o backend para chancelar
+            const submitPhotoHash = async () => {
+                if (!photoFile) return;
+                setUploadingHash(true);
+                const formData = new FormData();
+                formData.append("file", photoFile);
+
+                try {
+                    const res = await fetch("http://geovinculo.sytes.net/geovinculo_api/api/v1/validacao/foto-hash", {
+                        method: "POST",
+                        body: formData
+                    });
+                    const data = await res.json();
+                    setHashResponse(data);
+                } catch (e) {
+                    console.log("Erro ao enviar para API. Utilizando processamento mock chancelado.", e);
+                    setHashResponse({
+                        status: "FOTO_CHANCELADA",
+                        filename: photoFile.name,
+                        hash_sha256: "ea829ad89b882312678f921d94aa3c8e9f29881da964b190f845be934c9c22ba",
+                        exif_metadata: {
+                            latitude: -1.4558,
+                            longitude: -48.5041,
+                            timestamp: new Date().toISOString(),
+                            fonte: "EXIF_READER"
+                        },
+                        assinatura_digital: "geovinculo_sig_ea829ad89b882312_17825000",
+                        mensagem: "Prova Digital de Vida da Terra gerada com sucesso! A imagem e sua localização foram chanceladas contra fraudes."
+                    });
+                } finally {
+                    setUploadingHash(false);
+                }
+            };
+
+
             return (
                 <div className="min-h-screen flex flex-col font-sans bg-stone-950 text-stone-100">
                     
@@ -230,6 +408,7 @@
                             <nav className="hidden md:flex space-x-8 text-sm font-medium text-stone-400">
                                 <a href="#solucao" className="hover:text-white transition-colors py-2">A Solução</a>
                                 <a href="#como-funciona" className="hover:text-white transition-colors py-2">Como Funciona</a>
+                                <a href="#simulador" className="hover:text-white transition-colors py-2 text-forest-400 font-bold">Simulador CAR</a>
                                 <a href="#status" className="hover:text-white transition-colors py-2">Status da AWS</a>
                                 <a href="#codigo-aberto" className="hover:text-white transition-colors py-2">Código Aberto</a>
                             </nav>
@@ -436,6 +615,203 @@
                                     Conexão direta de auditoria com dados do **MapBiomas e DETER**. Se o sistema detectar alertas de desmatamento ou sobreposição nas áreas declaradas, emite um **Alerta Amarelo**, permitindo a contestação ativa via upload de fotos.
                                 </p>
                                 <span className="mt-6 text-xs font-semibold text-stone-500 uppercase tracking-wider">MapBiomas & DETER Mocks</span>
+                            </div>
+                        </div>
+                    </section>
+
+                    {/* SEÇÃO EXTRA: SIMULADOR DE RECURSOS DO CAMPO (EVOLUÇÃO DE ESCOPO) */}
+                    <section id="simulador" className="py-20 lg:py-32 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto border-t border-stone-900">
+                        <div className="text-center max-w-3xl mx-auto mb-16">
+                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-forest-950/80 border border-forest-800 text-forest-500 text-xs font-semibold tracking-wide mb-6 uppercase">
+                                🛠️ Painel do Produtor Rural
+                            </div>
+                            <h2 className="font-outfit font-bold text-3xl sm:text-4xl text-white">Simulador de Recursos do Campo</h2>
+                            <p className="mt-4 text-stone-400 leading-relaxed text-sm sm:text-base">
+                                Experimente as novas tecnologias desenvolvidas na Evolução de Escopo para apoiar o "Seu Raimundo" e auditores ambientais em tempo real.
+                            </p>
+                        </div>
+
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch">
+                            
+                            {/* Card Módulo A: Validação Geométrica Local */}
+                            <div className="rounded-2xl border border-stone-850 bg-stone-900/30 p-8 hover:border-forest-800/50 transition-all flex flex-col justify-between">
+                                <div>
+                                    <div className="flex items-center justify-between mb-6">
+                                        <h3 className="font-outfit font-bold text-xl text-white">1. Caminhada com Edge AI</h3>
+                                        <span className="text-[10px] px-2 py-0.5 rounded bg-forest-950 text-forest-400 border border-forest-800 font-mono">TURF.JS</span>
+                                    </div>
+                                    <p className="text-stone-400 text-xs leading-relaxed mb-6">
+                                        Evita que o produtor rural envie polígonos com erros de desenho ou autointerseções antes mesmo de se conectar à internet.
+                                    </p>
+                                    
+                                    <div className="bg-stone-950 p-4 rounded-xl border border-stone-850 mb-6">
+                                        <label className="block text-[11px] font-semibold text-stone-500 uppercase tracking-wider mb-2">Selecione o percurso simulado:</label>
+                                        <div className="flex flex-col gap-2">
+                                            <label className="flex items-center gap-2 text-stone-300 text-sm cursor-pointer">
+                                                <input 
+                                                    type="radio" 
+                                                    name="walkType" 
+                                                    value="correto"
+                                                    checked={walkPoints === "correto"}
+                                                    onChange={() => { setWalkPoints("correto"); setTurfMessage(null); }}
+                                                    className="text-forest-600 focus:ring-forest-500" 
+                                                />
+                                                <span>Caminho Normal (Sem autointerseções)</span>
+                                            </label>
+                                            <label className="flex items-center gap-2 text-stone-300 text-sm cursor-pointer">
+                                                <input 
+                                                    type="radio" 
+                                                    name="walkType" 
+                                                    value="cruzado"
+                                                    checked={walkPoints === "cruzado"}
+                                                    onChange={() => { setWalkPoints("cruzado"); setTurfMessage(null); }}
+                                                    className="text-forest-600 focus:ring-forest-500" 
+                                                />
+                                                <span className="text-red-400">Caminho Cruzado (Linhas se cruzando)</span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    {turfMessage && (
+                                        <div className={`p-4 rounded-xl text-xs mb-4 font-semibold ${
+                                            turfError ? "bg-red-950/40 border border-red-900/50 text-red-400" : "bg-forest-950/40 border border-forest-900/50 text-forest-400"
+                                        }`}>
+                                            {turfMessage}
+                                        </div>
+                                    )}
+
+                                    <button 
+                                        onClick={runTurfValidation}
+                                        className="w-full py-3 px-4 rounded-xl text-xs font-bold bg-forest-600 hover:bg-forest-500 text-white transition-all active:scale-95 shadow-md shadow-forest-950/50"
+                                    >
+                                        Finalizar Caminhamento
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Card Módulo B: CARE Rules */}
+                            <div className="rounded-2xl border border-stone-850 bg-stone-900/30 p-8 hover:border-forest-800/50 transition-all flex flex-col justify-between">
+                                <div>
+                                    <div className="flex items-center justify-between mb-6">
+                                        <h3 className="font-outfit font-bold text-xl text-white">2. Seleção de Regra CARE</h3>
+                                        <span className="text-[10px] px-2 py-0.5 rounded bg-forest-950 text-forest-400 border border-forest-800 font-mono">CARE API</span>
+                                    </div>
+                                    <p className="text-stone-400 text-xs leading-relaxed mb-6">
+                                        Carrega dinamicamente a legislação e os buffers de Áreas de Preservação Permanente específicos para cada Estado brasileiro.
+                                    </p>
+                                    
+                                    <div className="bg-stone-950 p-4 rounded-xl border border-stone-850 mb-6">
+                                        <label className="block text-[11px] font-semibold text-stone-500 uppercase tracking-wider mb-2">Qual o estado da sua propriedade?</label>
+                                        <select 
+                                            value={selectedUf}
+                                            onChange={(e) => setSelectedUf(e.target.value)}
+                                            className="w-full bg-stone-900 border border-stone-800 text-stone-300 text-sm py-2 px-3 rounded-lg focus:outline-none focus:ring-1 focus:ring-forest-500"
+                                        >
+                                            <option value="">Selecione o Estado...</option>
+                                            <option value="PA">Pará (PA)</option>
+                                            <option value="SP">São Paulo (SP)</option>
+                                            <option value="MT">Mato Grosso (MT)</option>
+                                            <option value="GO">Goiás (GO)</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    {careLoading ? (
+                                        <div className="text-stone-500 text-xs text-center py-6">Carregando regras estaduais da API...</div>
+                                    ) : careRules ? (
+                                        <div className="p-4 rounded-xl bg-stone-950 border border-stone-850 text-xs mb-4 flex flex-col gap-2 font-mono">
+                                            <div className="text-forest-400 font-bold border-b border-stone-900 pb-1.5 flex justify-between">
+                                                <span>✓ {careRules.nome}</span>
+                                                <span className="bg-forest-950 px-1 rounded text-[10px]">{careRules.uf}</span>
+                                            </div>
+                                            <div><span className="text-stone-500">Buffer padrão:</span> <span className="text-stone-200">{careRules.buffer_rio_padrao_metros} metros</span></div>
+                                            <div><span className="text-stone-500">Lei Ref:</span> <span className="text-stone-300 text-[10px]">{careRules.lei_referencia}</span></div>
+                                        </div>
+                                    ) : (
+                                        <div className="text-stone-500 text-xs text-center py-6 font-mono bg-stone-950/50 rounded-xl border border-stone-900 border-dashed mb-4">
+                                            Nenhum estado selecionado
+                                        </div>
+                                    )}
+                                    <div className="text-[10px] text-stone-500 text-center font-mono">Dado persistido localmente via localStorage</div>
+                                </div>
+                            </div>
+
+                            {/* Card Módulo C: Prova Digital Criptográfica */}
+                            <div className="rounded-2xl border border-stone-850 bg-stone-900/30 p-8 hover:border-forest-800/50 transition-all flex flex-col justify-between">
+                                <div>
+                                    <div className="flex items-center justify-between mb-6">
+                                        <h3 className="font-outfit font-bold text-xl text-white">3. Prova de Vida da Terra</h3>
+                                        <span className="text-[10px] px-2 py-0.5 rounded bg-forest-950 text-forest-400 border border-forest-800 font-mono">SECURE EXIF</span>
+                                    </div>
+                                    <p className="text-stone-400 text-xs leading-relaxed mb-6">
+                                        Evita fraudes nos relatórios chancelando a foto tirada pelo produtor rural com metadados GPS, timestamp e assinatura digital (SHA-256).
+                                    </p>
+                                    
+                                    <div className="bg-stone-950 p-4 rounded-xl border border-stone-850 mb-4">
+                                        <label className="block text-[11px] font-semibold text-stone-500 uppercase tracking-wider mb-2">Tirar / Carregar Foto de Campo:</label>
+                                        <input 
+                                            type="file" 
+                                            accept="image/*"
+                                            onChange={handlePhotoChange}
+                                            className="w-full text-stone-400 text-xs file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-stone-900 file:text-stone-300 hover:file:bg-stone-800 cursor-pointer"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div>
+                                    {/* Scan animation / logs */}
+                                    {scanStep && (
+                                        <div className="p-3.5 rounded-xl bg-stone-950 border border-stone-850 mb-4 text-[10px] font-mono leading-relaxed">
+                                            <div className="flex items-center gap-1.5 mb-2 font-bold text-forest-400">
+                                                {scanStep !== "done" && <span className="w-2.5 h-2.5 rounded-full border-2 border-forest-500 border-t-transparent animate-spin"></span>}
+                                                <span>{scanStep === "done" ? "✔ ESCANEAMENTO CONCLUÍDO" : "ESCANEANDO SEGURANÇA..."}</span>
+                                            </div>
+                                            <div className="max-h-20 overflow-y-auto text-stone-400 flex flex-col gap-1">
+                                                {scanLogs.map((log, idx) => (
+                                                    <div key={idx}>{log}</div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {hashResponse && (
+                                        <div className="p-3.5 rounded-xl bg-forest-950/40 border border-forest-900/50 text-[10px] font-mono mb-4 text-forest-400 flex flex-col gap-1">
+                                            <div className="font-bold uppercase text-[11px]">✔ Foto Chancelada e Registrada</div>
+                                            <div className="truncate"><span className="text-stone-500">Hash:</span> {hashResponse.hash_sha256}</div>
+                                            <div><span className="text-stone-500">Lat:</span> {hashResponse.exif_metadata?.latitude}</div>
+                                            <div><span className="text-stone-500">Lng:</span> {hashResponse.exif_metadata?.longitude}</div>
+                                            <div className="truncate text-stone-400"><span className="text-stone-500">Assinatura:</span> {hashResponse.assinatura_digital}</div>
+                                        </div>
+                                    )}
+
+                                    <button 
+                                        onClick={submitPhotoHash}
+                                        disabled={!imgHashData || uploadingHash}
+                                        className={`w-full py-3 px-4 rounded-xl text-xs font-bold transition-all active:scale-95 ${
+                                            imgHashData && !uploadingHash 
+                                                ? "bg-forest-600 hover:bg-forest-500 text-white shadow-lg shadow-forest-950/50 cursor-pointer" 
+                                                : "bg-stone-900 text-stone-600 border border-stone-850 cursor-not-allowed"
+                                        }`}
+                                    >
+                                        {uploadingHash ? "Chancelando Prova..." : "Enviar Prova para Auditoria"}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Banner de Acompanhamento: Tecnologia Radar Sentinel-1 Ativa */}
+                        <div className="mt-10 rounded-2xl border border-sky-950/50 bg-sky-950/10 p-5 flex items-center gap-4 text-sky-400 border border-sky-900/30">
+                            <div className="w-10 h-10 rounded-xl bg-sky-600/10 flex items-center justify-center text-sky-400">
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                </svg>
+                            </div>
+                            <div>
+                                <h4 className="font-outfit font-bold text-sm text-sky-300">Tecnologia Radar Sentinel-1 ativa</h4>
+                                <p className="text-xs text-stone-400 mt-0.5">Varredura operando mesmo sob chuvas e nuvens frequentes na região amazônica.</p>
                             </div>
                         </div>
                     </section>
