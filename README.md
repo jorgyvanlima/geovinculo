@@ -165,3 +165,12 @@ Use os seguintes caminhos públicos para se conectar ao ecossistema do GeoVíncu
 *   **Painel NodeODM**: `http://geovinculo.sytes.net/geovinculo_odm/`
 *   **GeoServer**: `http://geovinculo.sytes.net/geovinculo_geoserver/`
 
+---
+
+## 👥 Equipe 185
+
+Olá a todos! Nós somos a **Equipe 185**. O nosso time é composto por:
+*   **Fernanda Schultz** — Estudante de Engenharia Agronômica (Gestora de Projetos)
+*   **Eduardo Tolentino** — Estudante de Engenharia Agronômica (Gestor de Projetos)
+*   **Jorgyvan Lima** — Estudante de Sistemas de Informação (Programador Full Stack & DevOps)
+
