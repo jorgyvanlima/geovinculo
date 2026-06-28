@@ -1,14 +1,18 @@
 <!DOCTYPE html>
 <html lang="pt-BR" class="scroll-smooth">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GeoVínculo CAR - Inteligência Coletiva e Automatização do CAR</title>
-    <meta name="description" content="Plataforma geoespacial integrada para automação, vetorização por IA e validação colaborativa do Cadastro Ambiental Rural.">
+    <meta name="description"
+        content="Plataforma geoespacial integrada para automação, vetorização por IA e validação colaborativa do Cadastro Ambiental Rural.">
     <!-- Google Fonts: Outfit & Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -47,7 +51,7 @@
     <script src="https://unpkg.com/@babel/standalone@7.12.12/babel.min.js"></script>
     <!-- Turf.js for Edge AI Geometric Validation -->
     <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
-    
+
     <style>
         /* Custom animations and styling */
         .gradient-orb {
@@ -55,39 +59,53 @@
             opacity: 0.15;
             animation: float 10s infinite alternate;
         }
+
         @keyframes float {
-            0% { transform: translate(0, 0) scale(1); }
-            100% { transform: translate(50px, 50px) scale(1.2); }
+            0% {
+                transform: translate(0, 0) scale(1);
+            }
+
+            100% {
+                transform: translate(50px, 50px) scale(1.2);
+            }
         }
+
         .glass {
             background: rgba(255, 255, 255, 0.03);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.08);
         }
+
         .glass-light {
             background: rgba(255, 255, 255, 0.7);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
+
         /* Custom scrollbar */
         ::-webkit-scrollbar {
             width: 8px;
         }
+
         ::-webkit-scrollbar-track {
             background: #022c22;
         }
+
         ::-webkit-scrollbar-thumb {
             background: #15803d;
             border-radius: 4px;
         }
+
         ::-webkit-scrollbar-thumb:hover {
             background: #22c55e;
         }
     </style>
 </head>
-<body class="bg-earth-50 text-stone-800 font-sans antialiased selection:bg-forest-600 selection:text-white overflow-x-hidden">
+
+<body
+    class="bg-earth-50 text-stone-800 font-sans antialiased selection:bg-forest-600 selection:text-white overflow-x-hidden">
 
     <div id="root"></div>
 
@@ -210,7 +228,7 @@
             // =========================================================================
             // MÓDULOS DE SIMULAÇÃO E EVOLUÇÃO DE ESCOPO (ESTADOS E FUNÇÕES)
             // =========================================================================
-            
+
             // Módulo A: Validação Geométrica Local (Turf.js)
             const [walkPoints, setWalkPoints] = useState("correto"); // "correto" ou "cruzado"
             const [turfMessage, setTurfMessage] = useState(null);
@@ -307,7 +325,7 @@
                 try {
                     const polygon = turf.polygon(coords);
                     const kinks = turf.kinks(polygon);
-                    
+
                     if (kinks.features.length > 0) {
                         setTurfError(true);
                         setTurfMessage("Erro de Desenho: O polígono está se cruzando. Refaça a caminhada.");
@@ -329,15 +347,15 @@
                     setScanStep("gps");
                     setScanLogs(["Iniciando análise de segurança da Prova Digital..."]);
                     setHashResponse(null);
-                    
+
                     setTimeout(() => {
                         setScanStep("sha256");
                         setScanLogs(prev => [...prev, "[OK] Extraindo GPS e metadados EXIF da câmera...", "Coordenadas: Lat -1.455800, Lng -48.504100"]);
-                        
+
                         setTimeout(() => {
                             setScanStep("signed");
                             setScanLogs(prev => [...prev, "[OK] Gerando Hash Criptográfico SHA-256 de integridade...", "Hash: 63e020ef783d5a8b7ea92..."]);
-                            
+
                             setTimeout(() => {
                                 setScanStep("done");
                                 setScanLogs(prev => [...prev, "✔ Foto Chancelada com Cadeia de Custódia!"]);
@@ -385,7 +403,7 @@
 
             return (
                 <div className="min-h-screen flex flex-col font-sans bg-stone-950 text-stone-100">
-                    
+
                     {/* Background visual elements */}
                     <div className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full bg-forest-800/10 gradient-orb pointer-events-none"></div>
                     <div className="absolute top-1/2 right-1/4 w-[500px] h-[500px] rounded-full bg-forest-600/5 gradient-orb pointer-events-none" style={{ animationDelay: '-5s' }}></div>
@@ -404,7 +422,7 @@
                                     GeoVínculo <span className="text-forest-500 font-extrabold">CAR</span>
                                 </span>
                             </a>
-                            
+
                             <nav className="hidden md:flex space-x-8 text-sm font-medium text-stone-400">
                                 <a href="#solucao" className="hover:text-white transition-colors py-2">A Solução</a>
                                 <a href="#como-funciona" className="hover:text-white transition-colors py-2">Como Funciona</a>
@@ -424,13 +442,13 @@
                     {/* HERO SECTION */}
                     <section className="relative pt-36 pb-20 lg:pt-48 lg:pb-32 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto flex flex-col items-center text-center">
                         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-forest-950/80 border border-forest-800 text-forest-500 text-xs font-semibold tracking-wide mb-6 uppercase">
-                            🌱 haCARthon 2026 - Solução Vencedora Desafio 2
+                            🌱 haCARthon 2026 - Solução Desafio 2 - Equipe 185
                         </div>
-                        
+
                         <h1 className="font-outfit font-extrabold text-4xl sm:text-5xl lg:text-7xl text-white tracking-tight max-w-5xl leading-[1.1]">
                             GeoVínculo CAR: Inteligência Coletiva e <span className="text-transparent bg-clip-text bg-gradient-to-r from-forest-500 via-emerald-400 to-forest-600">Automatização do CAR</span>
                         </h1>
-                        
+
                         <p className="mt-8 text-stone-400 text-base sm:text-lg lg:text-xl max-w-3xl leading-relaxed">
                             Conectando dados orbitais de satélites, inteligência artificial avançada e o conhecimento prático do produtor rural no campo para uma regularização ambiental ágil, justa e 100% precisa.
                         </p>
@@ -463,9 +481,9 @@
                                     {/* Sidebar */}
                                     <div className="bg-stone-950 border-r border-stone-900 p-4 hidden md:flex flex-col gap-4 text-xs">
                                         <div className="font-bold text-stone-400 uppercase tracking-wider text-[10px]">Painel de Controle</div>
-                                        <div className="flex items-center gap-2 text-forest-400 font-semibold bg-forest-950/30 p-2 rounded border border-forest-900/30"><MapPinIcon className="w-4 h-4"/> Módulo CAR IA</div>
-                                        <div className="flex items-center gap-2 text-stone-400 p-2 hover:bg-stone-900 rounded"><DroneIcon className="w-4 h-4"/> Processar Drones</div>
-                                        <div className="flex items-center gap-2 text-stone-400 p-2 hover:bg-stone-900 rounded"><CpuIcon className="w-4 h-4"/> Validação MapBiomas</div>
+                                        <div className="flex items-center gap-2 text-forest-400 font-semibold bg-forest-950/30 p-2 rounded border border-forest-900/30"><MapPinIcon className="w-4 h-4" /> Módulo CAR IA</div>
+                                        <div className="flex items-center gap-2 text-stone-400 p-2 hover:bg-stone-900 rounded"><DroneIcon className="w-4 h-4" /> Processar Drones</div>
+                                        <div className="flex items-center gap-2 text-stone-400 p-2 hover:bg-stone-900 rounded"><CpuIcon className="w-4 h-4" /> Validação MapBiomas</div>
                                         <div className="mt-auto p-2 bg-stone-900/50 rounded border border-stone-850">
                                             <div className="text-[10px] text-stone-500">Conexão AWS</div>
                                             <div className="font-mono text-forest-500 font-bold flex items-center gap-1.5 mt-0.5">
@@ -498,8 +516,8 @@
                                             </svg>
                                             {/* Floating telemetry labels */}
                                             <div className="absolute top-4 left-4 bg-stone-900/90 border border-stone-850 p-2 rounded text-[10px] font-mono">
-                                                <span className="text-emerald-500">✓ Rio Secundário</span><br/>
-                                                <span className="text-stone-400">Buffer: 30 metros</span><br/>
+                                                <span className="text-emerald-500">✓ Rio Secundário</span><br />
+                                                <span className="text-stone-400">Buffer: 30 metros</span><br />
                                                 <span className="text-stone-400">Geom: Polygon (Multi)</span>
                                             </div>
                                             <div className="absolute bottom-4 right-4 bg-stone-900/90 border border-stone-850 p-2 rounded text-[10px] font-mono text-yellow-500">
@@ -632,7 +650,7 @@
                         </div>
 
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch">
-                            
+
                             {/* Card Módulo A: Validação Geométrica Local */}
                             <div className="rounded-2xl border border-stone-850 bg-stone-900/30 p-8 hover:border-forest-800/50 transition-all flex flex-col justify-between">
                                 <div>
@@ -643,29 +661,29 @@
                                     <p className="text-stone-400 text-xs leading-relaxed mb-6">
                                         Evita que o produtor rural envie polígonos com erros de desenho ou autointerseções antes mesmo de se conectar à internet.
                                     </p>
-                                    
+
                                     <div className="bg-stone-950 p-4 rounded-xl border border-stone-850 mb-6">
                                         <label className="block text-[11px] font-semibold text-stone-500 uppercase tracking-wider mb-2">Selecione o percurso simulado:</label>
                                         <div className="flex flex-col gap-2">
                                             <label className="flex items-center gap-2 text-stone-300 text-sm cursor-pointer">
-                                                <input 
-                                                    type="radio" 
-                                                    name="walkType" 
+                                                <input
+                                                    type="radio"
+                                                    name="walkType"
                                                     value="correto"
                                                     checked={walkPoints === "correto"}
                                                     onChange={() => { setWalkPoints("correto"); setTurfMessage(null); }}
-                                                    className="text-forest-600 focus:ring-forest-500" 
+                                                    className="text-forest-600 focus:ring-forest-500"
                                                 />
                                                 <span>Caminho Normal (Sem autointerseções)</span>
                                             </label>
                                             <label className="flex items-center gap-2 text-stone-300 text-sm cursor-pointer">
-                                                <input 
-                                                    type="radio" 
-                                                    name="walkType" 
+                                                <input
+                                                    type="radio"
+                                                    name="walkType"
                                                     value="cruzado"
                                                     checked={walkPoints === "cruzado"}
                                                     onChange={() => { setWalkPoints("cruzado"); setTurfMessage(null); }}
-                                                    className="text-forest-600 focus:ring-forest-500" 
+                                                    className="text-forest-600 focus:ring-forest-500"
                                                 />
                                                 <span className="text-red-400">Caminho Cruzado (Linhas se cruzando)</span>
                                             </label>
@@ -675,14 +693,13 @@
 
                                 <div>
                                     {turfMessage && (
-                                        <div className={`p-4 rounded-xl text-xs mb-4 font-semibold ${
-                                            turfError ? "bg-red-950/40 border border-red-900/50 text-red-400" : "bg-forest-950/40 border border-forest-900/50 text-forest-400"
-                                        }`}>
+                                        <div className={`p-4 rounded-xl text-xs mb-4 font-semibold ${turfError ? "bg-red-950/40 border border-red-900/50 text-red-400" : "bg-forest-950/40 border border-forest-900/50 text-forest-400"
+                                            }`}>
                                             {turfMessage}
                                         </div>
                                     )}
 
-                                    <button 
+                                    <button
                                         onClick={runTurfValidation}
                                         className="w-full py-3 px-4 rounded-xl text-xs font-bold bg-forest-600 hover:bg-forest-500 text-white transition-all active:scale-95 shadow-md shadow-forest-950/50"
                                     >
@@ -701,10 +718,10 @@
                                     <p className="text-stone-400 text-xs leading-relaxed mb-6">
                                         Carrega dinamicamente a legislação e os buffers de Áreas de Preservação Permanente específicos para cada Estado brasileiro.
                                     </p>
-                                    
+
                                     <div className="bg-stone-950 p-4 rounded-xl border border-stone-850 mb-6">
                                         <label className="block text-[11px] font-semibold text-stone-500 uppercase tracking-wider mb-2">Qual o estado da sua propriedade?</label>
-                                        <select 
+                                        <select
                                             value={selectedUf}
                                             onChange={(e) => setSelectedUf(e.target.value)}
                                             className="w-full bg-stone-900 border border-stone-800 text-stone-300 text-sm py-2 px-3 rounded-lg focus:outline-none focus:ring-1 focus:ring-forest-500"
@@ -749,11 +766,11 @@
                                     <p className="text-stone-400 text-xs leading-relaxed mb-6">
                                         Evita fraudes nos relatórios chancelando a foto tirada pelo produtor rural com metadados GPS, timestamp e assinatura digital (SHA-256).
                                     </p>
-                                    
+
                                     <div className="bg-stone-950 p-4 rounded-xl border border-stone-850 mb-4">
                                         <label className="block text-[11px] font-semibold text-stone-500 uppercase tracking-wider mb-2">Tirar / Carregar Foto de Campo:</label>
-                                        <input 
-                                            type="file" 
+                                        <input
+                                            type="file"
                                             accept="image/*"
                                             onChange={handlePhotoChange}
                                             className="w-full text-stone-400 text-xs file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-stone-900 file:text-stone-300 hover:file:bg-stone-800 cursor-pointer"
@@ -787,14 +804,13 @@
                                         </div>
                                     )}
 
-                                    <button 
+                                    <button
                                         onClick={submitPhotoHash}
                                         disabled={!imgHashData || uploadingHash}
-                                        className={`w-full py-3 px-4 rounded-xl text-xs font-bold transition-all active:scale-95 ${
-                                            imgHashData && !uploadingHash 
-                                                ? "bg-forest-600 hover:bg-forest-500 text-white shadow-lg shadow-forest-950/50 cursor-pointer" 
+                                        className={`w-full py-3 px-4 rounded-xl text-xs font-bold transition-all active:scale-95 ${imgHashData && !uploadingHash
+                                                ? "bg-forest-600 hover:bg-forest-500 text-white shadow-lg shadow-forest-950/50 cursor-pointer"
                                                 : "bg-stone-900 text-stone-600 border border-stone-850 cursor-not-allowed"
-                                        }`}
+                                            }`}
                                     >
                                         {uploadingHash ? "Chancelando Prova..." : "Enviar Prova para Auditoria"}
                                     </button>
@@ -827,22 +843,21 @@
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-12">
                             {Object.entries(statusData).map(([key, service]) => (
-                                <a 
-                                    href={service.url} 
-                                    target="_blank" 
-                                    key={key} 
+                                <a
+                                    href={service.url}
+                                    target="_blank"
+                                    key={key}
                                     className="rounded-2xl border border-stone-850 bg-stone-900/20 p-6 hover:border-forest-800/40 hover:bg-stone-900/40 transition-all flex flex-col gap-4 relative group"
                                 >
                                     <div className="absolute top-4 right-4 flex items-center justify-center">
-                                        <span className={`w-2.5 h-2.5 rounded-full ${
-                                            service.status === 'online' ? 'bg-forest-500 animate-pulse' : 'bg-yellow-500 animate-pulse'
-                                        }`}></span>
+                                        <span className={`w-2.5 h-2.5 rounded-full ${service.status === 'online' ? 'bg-forest-500 animate-pulse' : 'bg-yellow-500 animate-pulse'
+                                            }`}></span>
                                     </div>
                                     <div className="w-10 h-10 rounded-lg bg-stone-900 flex items-center justify-center text-stone-400 border border-stone-850">
-                                        {key === 'backend' && <CpuIcon className="w-5 h-5"/>}
-                                        {key === 'swagger' && <TerminalIcon className="w-5 h-5"/>}
-                                        {key === 'nodeodm' && <DroneIcon className="w-5 h-5"/>}
-                                        {key === 'geoserver' && <DatabaseIcon className="w-5 h-5"/>}
+                                        {key === 'backend' && <CpuIcon className="w-5 h-5" />}
+                                        {key === 'swagger' && <TerminalIcon className="w-5 h-5" />}
+                                        {key === 'nodeodm' && <DroneIcon className="w-5 h-5" />}
+                                        {key === 'geoserver' && <DatabaseIcon className="w-5 h-5" />}
                                     </div>
                                     <div>
                                         <h4 className="font-outfit font-bold text-sm text-white group-hover:text-forest-400 transition-colors">{service.name}</h4>
@@ -870,7 +885,7 @@
                                 <p className="mt-6 text-stone-400 text-sm sm:text-base leading-relaxed">
                                     Nossa solução é desenvolvida de acordo com os princípios dos **Bens Públicos Digitais (DPG)**. Isso garante liberdade total para estados, municípios e órgãos ambientais implantarem a ferramenta sem pagar taxas de licenciamento de software.
                                 </p>
-                                
+
                                 <div className="mt-8 grid grid-cols-2 gap-6 text-sm">
                                     <div className="flex flex-col gap-2 p-4 rounded-xl bg-stone-900/30 border border-stone-850">
                                         <span className="font-bold text-white">PostgreSQL / PostGIS</span>
@@ -928,4 +943,5 @@
         root.render(<App />);
     </script>
 </body>
+
 </html>
